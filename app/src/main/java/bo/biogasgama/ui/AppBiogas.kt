@@ -83,7 +83,7 @@ fun AppBiogas(vm: AppViewModel) {
             val m = Modifier.padding(relleno).fillMaxSize()
             when (pestana) {
                 0 -> PantallaCaptura(vm, posicion, m)
-                1 -> PantallaMapa(posicion, vm.registros, m)
+                1 -> PantallaMapa(vm, posicion, m)
                 2 -> PantallaRegistros(vm, m)
                 else -> PantallaAjustes(vm, m)
             }

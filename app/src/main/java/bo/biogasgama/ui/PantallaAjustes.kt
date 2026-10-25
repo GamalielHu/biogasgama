@@ -89,6 +89,6 @@ private fun AcercaDe() {
                 "y exportación OGC GeoPackage (EPSG:4326) para QGIS/ArcGIS.",
             style = MaterialTheme.typography.bodySmall,
         )
-        Text("Mapa: imágenes satelitales Esri World Imagery vía osmdroid.", style = MaterialTheme.typography.bodySmall)
+        Text("Mapa: Google Maps (callejero, satélite, híbrido y relieve).", style = MaterialTheme.typography.bodySmall)
     }
 }

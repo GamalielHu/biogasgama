@@ -14,6 +14,11 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        // Clave de Google Maps: secreto MAPS_API_KEY en GitHub Actions o propiedad local de Gradle.
+        val claveMapas = System.getenv("MAPS_API_KEY") ?: (project.findProperty("MAPS_API_KEY") as String?) ?: ""
+        manifestPlaceholders["MAPS_API_KEY"] = claveMapas
+        buildConfigField("boolean", "TIENE_CLAVE_MAPAS", (claveMapas.isNotBlank()).toString())
     }
 
     // Firma fija: así cada APK nuevo se instala encima del anterior.
@@ -45,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -61,8 +67,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     // Ubicación GNSS fusionada
     implementation("com.google.android.gms:play-services-location:21.3.0")
-    // Visor de mapas con teselas satelitales
-    implementation("org.osmdroid:osmdroid-android:6.1.20")
+    // Google Maps para Compose
+    implementation("com.google.maps.android:maps-compose:6.2.1")
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
 
     testImplementation("junit:junit:4.13.2")
 }

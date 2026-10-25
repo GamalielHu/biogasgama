@@ -16,6 +16,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+enum class FiltroVeredicto(val etiqueta: String) { TODOS("Todos"), SI("Solo SÍ"), NO("Solo NO") }
+
+enum class MapaBase(val etiqueta: String) { NORMAL("Callejero"), SATELITE("Satélite"), HIBRIDO("Híbrido"), RELIEVE("Relieve") }
+
 val DIRECCIONES = listOf("N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSO", "SO", "OSO", "O", "ONO", "NO", "NNO")
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
@@ -42,6 +46,23 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var registros by mutableStateOf<List<Registro>>(emptyList())
         private set
     var aviso by mutableStateOf<String?>(null)
+
+    // Estado del mapa (capas y filtros)
+    var mapaBase by mutableStateOf(MapaBase.HIBRIDO)
+    var filtroVeredicto by mutableStateOf(FiltroVeredicto.TODOS)
+    var filtroCh4MinLel by mutableStateOf(0f)
+    /** Opacidad del mapa base: 1 = normal, 0 = fondo totalmente cubierto por el velo. */
+    var opacidadMapa by mutableStateOf(1f)
+    /** true = velo oscuro, false = velo claro. */
+    var veloOscuro by mutableStateOf(true)
+
+    fun registrosVisibles(): List<Registro> = registros.filter { r ->
+        r.ch4Lel >= filtroCh4MinLel && when (filtroVeredicto) {
+            FiltroVeredicto.TODOS -> true
+            FiltroVeredicto.SI -> r.potencialBiogas
+            FiltroVeredicto.NO -> !r.potencialBiogas
+        }
+    }
 
     init {
         refrescar()

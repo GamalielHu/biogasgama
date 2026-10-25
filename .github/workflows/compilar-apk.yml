@@ -31,6 +31,8 @@ jobs:
 
       - name: Compilar APK
         shell: bash
+        env:
+          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
         run: |
           chmod +x gradlew
           ./gradlew testDebugUnitTest assembleDebug --no-daemon --stacktrace 2>&1 | tee build.log
