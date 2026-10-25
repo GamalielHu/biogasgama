@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pin de ubicación con una llama de biogás -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,28c-11,0 -20,9 -20,20c0,15 20,34 20,34s20,-19 20,-34c0,-11 -9,-20 -20,-20z" />
+    <path
+        android:fillColor="#3FA34D"
+        android:pathData="M54,36c0,0 -9,8 -9,15a9,9 0 0,0 18,0c0,-4 -3,-7 -3,-7c0,0 -1,4 -4,5c1,-5 -2,-10 -2,-13z" />
+</vector>
