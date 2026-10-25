@@ -18,7 +18,9 @@ import java.util.Locale
 
 enum class FiltroVeredicto(val etiqueta: String) { TODOS("Todos"), SI("Solo SÍ"), NO("Solo NO") }
 
-enum class MapaBase(val etiqueta: String) { NORMAL("Callejero"), SATELITE("Satélite"), HIBRIDO("Híbrido"), RELIEVE("Relieve") }
+enum class MapaBase(val etiqueta: String) {
+    CALLES("Calles"), SATELITE("Satélite"), HIBRIDO("Híbrido"), RELIEVE("Relieve"), ESRI("Esri satélite"), OSM("OpenStreetMap")
+}
 
 val DIRECCIONES = listOf("N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSO", "SO", "OSO", "O", "ONO", "NO", "NNO")
 
@@ -51,9 +53,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var mapaBase by mutableStateOf(MapaBase.HIBRIDO)
     var filtroVeredicto by mutableStateOf(FiltroVeredicto.TODOS)
     var filtroCh4MinLel by mutableStateOf(0f)
-    /** Opacidad del mapa base: 1 = normal, 0 = fondo totalmente cubierto por el velo. */
+    /** Opacidad del mapa base: 1 = normal, 0 = fondo totalmente oscurecido o aclarado. */
     var opacidadMapa by mutableStateOf(1f)
-    /** true = velo oscuro, false = velo claro. */
+    /** true = atenuar hacia negro, false = hacia blanco. */
     var veloOscuro by mutableStateOf(true)
 
     fun registrosVisibles(): List<Registro> = registros.filter { r ->
