@@ -25,6 +25,8 @@ class GeoPackage(val archivo: File) {
             fecha_hora TEXT,
             latitud DOUBLE,
             longitud DOUBLE,
+            este_m DOUBLE,
+            norte_m DOUBLE,
             altitud_msnm DOUBLE,
             precision_m DOUBLE,
             temp_c DOUBLE,
@@ -39,6 +41,12 @@ class GeoPackage(val archivo: File) {
             potencial_biogas TEXT,
             observaciones TEXT"""
         private const val AHORA = "strftime('%Y-%m-%dT%H:%M:%fZ','now')"
+        private const val WKT_UTM20S = "PROJCS[\"WGS 84 / UTM zone 20S\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563," +
+            "AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]]," +
+            "UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]," +
+            "PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",-63]," +
+            "PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",10000000]," +
+            "UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"32720\"]]"
         private const val WKT_WGS84 = "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563," +
             "AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]]," +
             "UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]"
@@ -53,6 +61,7 @@ class GeoPackage(val archivo: File) {
             db.disableWriteAheadLogging() // un único archivo .gpkg, sin -wal al exportar
             crearEsquema(db)
             quitarColumnaDesarrollador(db)
+            pasarAUtm20S(db)
             bloque(db)
         }
     }
@@ -89,15 +98,16 @@ class GeoPackage(val archivo: File) {
             db.execSQL(srs, arrayOf("Undefined cartesian SRS", -1, "NONE", -1, "undefined", "undefined cartesian coordinate reference system"))
             db.execSQL(srs, arrayOf("Undefined geographic SRS", 0, "NONE", 0, "undefined", "undefined geographic coordinate reference system"))
             db.execSQL(srs, arrayOf("WGS 84 geodetic", GeometriaGpkg.SRS_WGS84, "EPSG", 4326, WKT_WGS84, "longitude/latitude coordinates in decimal degrees on the WGS 84 spheroid"))
+            insertarSrsUtm(db)
 
             db.execSQL("CREATE TABLE IF NOT EXISTS $TABLA ($COLUMNAS)")
             db.execSQL(
                 "INSERT OR IGNORE INTO gpkg_contents (table_name, data_type, identifier, description, srs_id) VALUES (?,?,?,?,?)",
-                arrayOf(TABLA, "features", TABLA, DESCRIPCION, GeometriaGpkg.SRS_WGS84),
+                arrayOf(TABLA, "features", TABLA, DESCRIPCION, Utm.SRS_UTM20S),
             )
             db.execSQL(
                 "INSERT OR IGNORE INTO gpkg_geometry_columns VALUES (?,?,?,?,?,?)",
-                arrayOf(TABLA, "geom", "POINT", GeometriaGpkg.SRS_WGS84, 0, 0),
+                arrayOf(TABLA, "geom", "POINT", Utm.SRS_UTM20S, 0, 0),
             )
             db.version = VERSION_GPKG
             db.setTransactionSuccessful()
@@ -125,9 +135,52 @@ class GeoPackage(val archivo: File) {
         }
     }
 
+    private fun insertarSrsUtm(db: SQLiteDatabase) {
+        db.execSQL(
+            "INSERT OR IGNORE INTO gpkg_spatial_ref_sys VALUES (?,?,?,?,?,?)",
+            arrayOf("WGS 84 / UTM zone 20S", Utm.SRS_UTM20S, "EPSG", 32720, WKT_UTM20S, "WGS 84 / UTM zona 20 Sur"),
+        )
+    }
+
+    /** Bases creadas antes de v1.8 tenían la capa en EPSG:4326: se reproyecta a UTM 20S y se llenan este_m/norte_m. */
+    private fun pasarAUtm20S(db: SQLiteDatabase) {
+        val srsActual = db.rawQuery("SELECT srs_id FROM gpkg_geometry_columns WHERE table_name = ?", arrayOf(TABLA)).use { c ->
+            if (c.moveToFirst()) c.getInt(0) else Utm.SRS_UTM20S
+        }
+        if (srsActual == Utm.SRS_UTM20S) return
+        val columnas = db.rawQuery("PRAGMA table_info($TABLA)", null).use { c ->
+            generateSequence { if (c.moveToNext()) c.getString(1) else null }.toSet()
+        }
+        db.beginTransaction()
+        try {
+            insertarSrsUtm(db)
+            if ("este_m" !in columnas) db.execSQL("ALTER TABLE $TABLA ADD COLUMN este_m DOUBLE")
+            if ("norte_m" !in columnas) db.execSQL("ALTER TABLE $TABLA ADD COLUMN norte_m DOUBLE")
+            db.rawQuery("SELECT id, latitud, longitud FROM $TABLA", null).use { c ->
+                while (c.moveToNext()) {
+                    val (este, norte) = Utm.aUtm20S(c.getDouble(1), c.getDouble(2))
+                    db.update(TABLA, ContentValues().apply {
+                        put("geom", GeometriaGpkg.punto(este, norte, Utm.SRS_UTM20S))
+                        put("este_m", este)
+                        put("norte_m", norte)
+                    }, "id = ?", arrayOf(c.getLong(0).toString()))
+                }
+            }
+            db.execSQL("UPDATE gpkg_geometry_columns SET srs_id = ? WHERE table_name = ?", arrayOf(Utm.SRS_UTM20S, TABLA))
+            db.execSQL("UPDATE gpkg_contents SET srs_id = ? WHERE table_name = ?", arrayOf(Utm.SRS_UTM20S, TABLA))
+            actualizarExtension(db)
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
     fun insertar(r: Registro): Long = usar { db ->
+        val (este, norte) = Utm.aUtm20S(r.latitud, r.longitud)
         val v = ContentValues().apply {
-            put("geom", GeometriaGpkg.punto(r.longitud, r.latitud))
+            put("geom", GeometriaGpkg.punto(este, norte, Utm.SRS_UTM20S))
+            put("este_m", este)
+            put("norte_m", norte)
             put("fecha_hora", r.fechaHora)
             put("latitud", r.latitud)
             put("longitud", r.longitud)
@@ -194,8 +247,8 @@ class GeoPackage(val archivo: File) {
     private fun actualizarExtension(db: SQLiteDatabase) {
         db.execSQL(
             """UPDATE gpkg_contents SET
-                min_x = (SELECT MIN(longitud) FROM $TABLA), max_x = (SELECT MAX(longitud) FROM $TABLA),
-                min_y = (SELECT MIN(latitud) FROM $TABLA), max_y = (SELECT MAX(latitud) FROM $TABLA),
+                min_x = (SELECT MIN(este_m) FROM $TABLA), max_x = (SELECT MAX(este_m) FROM $TABLA),
+                min_y = (SELECT MIN(norte_m) FROM $TABLA), max_y = (SELECT MAX(norte_m) FROM $TABLA),
                 last_change = $AHORA
                 WHERE table_name = ?""",
             arrayOf(TABLA),

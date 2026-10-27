@@ -55,7 +55,7 @@ fun PantallaRegistros(vm: AppViewModel, modifier: Modifier) {
 
     Column(modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            "${vm.registros.size} puntos · capa puntos_biogas (Point, EPSG:4326)",
+            "${vm.registros.size} puntos · capa puntos_biogas (Point, EPSG:32720)",
             style = MaterialTheme.typography.bodyMedium,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

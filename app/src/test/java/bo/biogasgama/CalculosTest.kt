@@ -53,4 +53,20 @@ class CalculosTest {
         assertEquals(-68.15, lon, 1e-12)
         assertEquals(-16.5, lat, 1e-12)
     }
+
+    @Test
+    fun utm20SComoPyproj() {
+        // Valores de referencia de pyproj (EPSG:4326 -> EPSG:32720)
+        val casos = listOf(
+            Triple(-17.78, -63.18, 480921.2131 to 8034144.9771),
+            Triple(0.0, -63.0, 500000.0 to 10000000.0),
+            Triple(-22.1, -60.5, 757929.8795 to 7553986.3790),
+            Triple(-16.5, -68.15, -50241.2410 to 8168719.0326),
+        )
+        casos.forEach { (lat, lon, esperado) ->
+            val (este, norte) = Utm.aUtm20S(lat, lon)
+            assertEquals(esperado.first, este, 0.001)
+            assertEquals(esperado.second, norte, 0.001)
+        }
+    }
 }

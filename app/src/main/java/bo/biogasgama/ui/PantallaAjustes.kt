@@ -86,7 +86,7 @@ private fun AcercaDe() {
         Text("Desarrollado por: $DESARROLLADOR", style = MaterialTheme.typography.bodyLarge)
         Text(
             "Levantamiento georreferenciado de gases (BW GasAlertMax XT II), evaluación de potencial de biogás " +
-                "y exportación OGC GeoPackage (EPSG:4326) para QGIS/ArcGIS.",
+                "y exportación OGC GeoPackage (UTM 20S, EPSG:32720) para QGIS/ArcGIS.",
             style = MaterialTheme.typography.bodySmall,
         )
         Text("Mapa: teselas de Google (calles, satélite, híbrido, relieve), Esri y OpenStreetMap vía osmdroid.", style = MaterialTheme.typography.bodySmall)

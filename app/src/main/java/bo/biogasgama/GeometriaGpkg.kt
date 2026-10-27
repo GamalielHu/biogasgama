@@ -7,7 +7,7 @@ import java.nio.ByteOrder
 object GeometriaGpkg {
     const val SRS_WGS84 = 4326
 
-    fun punto(lon: Double, lat: Double, srsId: Int = SRS_WGS84): ByteArray =
+    fun punto(x: Double, y: Double, srsId: Int = SRS_WGS84): ByteArray =
         ByteBuffer.allocate(8 + 21).order(ByteOrder.LITTLE_ENDIAN).apply {
             put('G'.code.toByte())
             put('P'.code.toByte())
@@ -16,8 +16,8 @@ object GeometriaGpkg {
             putInt(srsId)
             put(0x01)       // WKB little-endian
             putInt(1)       // wkbPoint
-            putDouble(lon)  // X
-            putDouble(lat)  // Y
+            putDouble(x)    // lon o este
+            putDouble(y)    // lat o norte
         }.array()
 
     /** Devuelve (lon, lat) de un punto GeoPackage sin envolvente. */
