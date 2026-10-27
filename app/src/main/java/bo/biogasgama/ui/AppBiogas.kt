@@ -1,8 +1,7 @@
 package bo.biogasgama.ui
 
-import android.os.SystemClock
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,7 +28,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -37,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -101,8 +98,6 @@ fun AppBiogas(vm: AppViewModel) {
 
 @Composable
 private fun Encabezado() {
-    var toques by remember { mutableIntStateOf(0) }
-    var ultimoToque by remember { mutableLongStateOf(0L) }
     var verCreditos by remember { mutableStateOf(false) }
     Column(
         Modifier
@@ -116,18 +111,8 @@ private fun Encabezado() {
             color = Color.White,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            // 5 toques seguidos (máx. 1,5 s entre toques) abren los créditos ocultos.
-            modifier = Modifier.pointerInput(Unit) {
-                detectTapGestures {
-                    val ahora = SystemClock.uptimeMillis()
-                    toques = if (ahora - ultimoToque <= 1500) toques + 1 else 1
-                    ultimoToque = ahora
-                    if (toques >= 5) {
-                        toques = 0
-                        verCreditos = true
-                    }
-                }
-            },
+            // Un toque en el título abre los créditos.
+            modifier = Modifier.clickable { verCreditos = true },
         )
         Text("Desarrollado por: $DESARROLLADOR", color = Color(0xFFCDE6D8), fontSize = 12.sp)
     }
@@ -135,7 +120,7 @@ private fun Encabezado() {
 }
 
 @Composable
-private fun DialogoPropiedad(alCerrar: () -> Unit) {
+fun DialogoPropiedad(alCerrar: () -> Unit) {
     AlertDialog(
         onDismissRequest = alCerrar,
         title = { Text("Propiedad Intelectual y Desarrollo") },

@@ -90,5 +90,8 @@ private fun AcercaDe() {
             style = MaterialTheme.typography.bodySmall,
         )
         Text("Mapa: teselas de Google (calles, satélite, híbrido, relieve), Esri y OpenStreetMap vía osmdroid.", style = MaterialTheme.typography.bodySmall)
+        var verCreditos by remember { mutableStateOf(false) }
+        TextButton(onClick = { verCreditos = true }) { Text("Propiedad intelectual y desarrollo") }
+        if (verCreditos) DialogoPropiedad { verCreditos = false }
     }
 }
