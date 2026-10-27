@@ -1,0 +1,23 @@
+e: file:///home/runner/work/biogasgama/biogasgama/app/build.gradle.kts:17:60: Unresolved reference: time
+e: file:///home/runner/work/biogasgama/biogasgama/app/build.gradle.kts:17:88: Unresolved reference: time
+e: file:///home/runner/work/biogasgama/biogasgama/app/build.gradle.kts:17:134: Unresolved reference: time
+
+[Incubating] Problems report is available at: file:///home/runner/work/biogasgama/biogasgama/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file '/home/runner/work/biogasgama/biogasgama/app/build.gradle.kts' line: 17
+--
+* What went wrong:
+Script compilation errors:
+
+  Line 17:         buildConfigField("String", "BUILD_TIME", "\"${java.time.ZonedDateTime.now(java.time.ZoneId.of("America/La_Paz")).format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))}\"")
+--
+* Exception is:
+ScriptCompilationException(scriptCompilationErrors=[ScriptCompilationError(message=Unresolved reference: time, location=/home/runner/.gradle/.tmp/gradle-kotlin-dsl-16155974705279915012.tmp/build.gradle.kts (17:60)), ScriptCompilationError(message=Unresolved reference: time, location=/home/runner/.gradle/.tmp/gradle-kotlin-dsl-16155974705279915012.tmp/build.gradle.kts (17:88)), ScriptCompilationError(message=Unresolved reference: time, location=/home/runner/.gradle/.tmp/gradle-kotlin-dsl-16155974705279915012.tmp/build.gradle.kts (17:134))])
+	at org.gradle.kotlin.dsl.support.KotlinCompilerKt.reportToMessageCollectorAndThrowOnErrors(KotlinCompiler.kt:277)
+	at org.gradle.kotlin.dsl.support.KotlinCompilerKt.compileKotlinScriptModuleTo(KotlinCompiler.kt:246)
+	at org.gradle.kotlin.dsl.support.KotlinCompilerKt.compileKotlinScriptToDirectory(KotlinCompiler.kt:198)
+--
+BUILD FAILED in 1m 1s
