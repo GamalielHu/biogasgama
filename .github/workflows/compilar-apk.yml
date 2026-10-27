@@ -35,7 +35,7 @@ jobs:
           chmod +x gradlew
           ./gradlew testDebugUnitTest assembleDebug --no-daemon --stacktrace 2>&1 | tee build.log
           test ${PIPESTATUS[0]} -eq 0
-          cp app/build/outputs/apk/debug/app-debug.apk BiogasGama.apk
+          cp app/build/outputs/apk/debug/app-debug.apk Biogas.apk
 
       - name: Guardar errores de compilación
         if: failure()
@@ -49,16 +49,16 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: BiogasGama-apk
-          path: BiogasGama.apk
+          name: Biogas-apk
+          path: Biogas.apk
 
       - name: Publicar descarga
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.${{ github.run_number }}
-          name: BiogasGama 1.${{ github.run_number }}
-          files: BiogasGama.apk
+          name: Biogas 1.${{ github.run_number }}
+          files: Biogas.apk
           make_latest: true
           body: |
-            Descarga **BiogasGama.apk** en tu celular Android y ábrelo para instalar o actualizar.
+            Descarga **Biogas.apk** en tu celular Android y ábrelo para instalar o actualizar.
             Desarrollado por: Gamaliel Huasco.

@@ -113,7 +113,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun nombreExportacion(): String =
-        "BiogasGama_" + SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date()) + ".gpkg"
+        "Biogas_" + SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date()) + ".gpkg"
 
     /** Guarda el .gpkg en la ubicación elegida con el selector del sistema (SAF). */
     fun exportarA(uri: Uri) {

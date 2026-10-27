@@ -82,7 +82,7 @@ private fun AcercaDe() {
         runCatching { contexto.packageManager.getPackageInfo(contexto.packageName, 0).versionName }.getOrNull() ?: ""
     }
     Seccion("Acerca de") {
-        Text("BiogasGama $version", fontWeight = FontWeight.Bold)
+        Text("Biogas $version", fontWeight = FontWeight.Bold)
         Text("Desarrollado por: $DESARROLLADOR", style = MaterialTheme.typography.bodyLarge)
         Text(
             "Levantamiento georreferenciado de gases (BW GasAlertMax XT II), evaluación de potencial de biogás " +

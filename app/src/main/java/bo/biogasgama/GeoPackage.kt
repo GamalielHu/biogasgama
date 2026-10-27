@@ -91,7 +91,7 @@ class GeoPackage(val archivo: File) {
             )
             db.execSQL(
                 "INSERT OR IGNORE INTO gpkg_contents (table_name, data_type, identifier, description, srs_id) VALUES (?,?,?,?,?)",
-                arrayOf(TABLA, "features", TABLA, "Levantamiento BiogasGama - $DESARROLLADOR", GeometriaGpkg.SRS_WGS84),
+                arrayOf(TABLA, "features", TABLA, "Levantamiento Biogas - $DESARROLLADOR", GeometriaGpkg.SRS_WGS84),
             )
             db.execSQL(
                 "INSERT OR IGNORE INTO gpkg_geometry_columns VALUES (?,?,?,?,?,?)",
