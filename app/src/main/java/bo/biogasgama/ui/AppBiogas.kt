@@ -1,7 +1,6 @@
 package bo.biogasgama.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -98,7 +97,6 @@ fun AppBiogas(vm: AppViewModel) {
 
 @Composable
 private fun Encabezado() {
-    var verCreditos by remember { mutableStateOf(false) }
     Column(
         Modifier
             .fillMaxWidth()
@@ -111,12 +109,8 @@ private fun Encabezado() {
             color = Color.White,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            // Un toque en el título abre los créditos.
-            modifier = Modifier.clickable { verCreditos = true },
         )
-        Text("Desarrollado por: $DESARROLLADOR", color = Color(0xFFCDE6D8), fontSize = 12.sp)
     }
-    if (verCreditos) DialogoPropiedad { verCreditos = false }
 }
 
 @Composable

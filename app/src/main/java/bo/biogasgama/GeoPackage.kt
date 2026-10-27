@@ -16,6 +16,28 @@ class GeoPackage(val archivo: File) {
         const val TABLA = "puntos_biogas"
         private const val ID_APLICACION = 0x47504B47 // "GPKG"
         private const val VERSION_GPKG = 10300
+        private const val DESCRIPCION = "Levantamiento Biogas"
+        private const val CAMPOS = "id, geom, fecha_hora, latitud, longitud, altitud_msnm, precision_m, temp_c, viento_vel, " +
+            "viento_dir, ch4_lel, ch4_vol_pct, ch4_ppm, h2s_ppm, co_ppm, o2_vol_pct, potencial_biogas, observaciones"
+        private const val COLUMNAS = """
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            geom POINT,
+            fecha_hora TEXT,
+            latitud DOUBLE,
+            longitud DOUBLE,
+            altitud_msnm DOUBLE,
+            precision_m DOUBLE,
+            temp_c DOUBLE,
+            viento_vel DOUBLE,
+            viento_dir TEXT,
+            ch4_lel DOUBLE,
+            ch4_vol_pct DOUBLE,
+            ch4_ppm DOUBLE,
+            h2s_ppm DOUBLE,
+            co_ppm DOUBLE,
+            o2_vol_pct DOUBLE,
+            potencial_biogas TEXT,
+            observaciones TEXT"""
         private const val AHORA = "strftime('%Y-%m-%dT%H:%M:%fZ','now')"
         private const val WKT_WGS84 = "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563," +
             "AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]]," +
@@ -30,6 +52,7 @@ class GeoPackage(val archivo: File) {
         ).use { db ->
             db.disableWriteAheadLogging() // un único archivo .gpkg, sin -wal al exportar
             crearEsquema(db)
+            quitarColumnaDesarrollador(db)
             bloque(db)
         }
     }
@@ -67,31 +90,10 @@ class GeoPackage(val archivo: File) {
             db.execSQL(srs, arrayOf("Undefined geographic SRS", 0, "NONE", 0, "undefined", "undefined geographic coordinate reference system"))
             db.execSQL(srs, arrayOf("WGS 84 geodetic", GeometriaGpkg.SRS_WGS84, "EPSG", 4326, WKT_WGS84, "longitude/latitude coordinates in decimal degrees on the WGS 84 spheroid"))
 
-            db.execSQL(
-                """CREATE TABLE IF NOT EXISTS $TABLA (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                    geom POINT,
-                    desarrollador TEXT,
-                    fecha_hora TEXT,
-                    latitud DOUBLE,
-                    longitud DOUBLE,
-                    altitud_msnm DOUBLE,
-                    precision_m DOUBLE,
-                    temp_c DOUBLE,
-                    viento_vel DOUBLE,
-                    viento_dir TEXT,
-                    ch4_lel DOUBLE,
-                    ch4_vol_pct DOUBLE,
-                    ch4_ppm DOUBLE,
-                    h2s_ppm DOUBLE,
-                    co_ppm DOUBLE,
-                    o2_vol_pct DOUBLE,
-                    potencial_biogas TEXT,
-                    observaciones TEXT)"""
-            )
+            db.execSQL("CREATE TABLE IF NOT EXISTS $TABLA ($COLUMNAS)")
             db.execSQL(
                 "INSERT OR IGNORE INTO gpkg_contents (table_name, data_type, identifier, description, srs_id) VALUES (?,?,?,?,?)",
-                arrayOf(TABLA, "features", TABLA, "Levantamiento Biogas - $DESARROLLADOR", GeometriaGpkg.SRS_WGS84),
+                arrayOf(TABLA, "features", TABLA, DESCRIPCION, GeometriaGpkg.SRS_WGS84),
             )
             db.execSQL(
                 "INSERT OR IGNORE INTO gpkg_geometry_columns VALUES (?,?,?,?,?,?)",
@@ -104,10 +106,28 @@ class GeoPackage(val archivo: File) {
         }
     }
 
+    /** Bases creadas antes de v1.7 tenían la columna "desarrollador": se reconstruye la tabla sin ella. */
+    private fun quitarColumnaDesarrollador(db: SQLiteDatabase) {
+        val tiene = db.rawQuery("PRAGMA table_info($TABLA)", null).use { c ->
+            generateSequence { if (c.moveToNext()) c.getString(1) else null }.any { it == "desarrollador" }
+        }
+        if (!tiene) return
+        db.beginTransaction()
+        try {
+            db.execSQL("ALTER TABLE $TABLA RENAME TO ${TABLA}_anterior")
+            db.execSQL("CREATE TABLE $TABLA ($COLUMNAS)")
+            db.execSQL("INSERT INTO $TABLA ($CAMPOS) SELECT $CAMPOS FROM ${TABLA}_anterior")
+            db.execSQL("DROP TABLE ${TABLA}_anterior")
+            db.execSQL("UPDATE gpkg_contents SET description = ? WHERE table_name = ?", arrayOf(DESCRIPCION, TABLA))
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
     fun insertar(r: Registro): Long = usar { db ->
         val v = ContentValues().apply {
             put("geom", GeometriaGpkg.punto(r.longitud, r.latitud))
-            put("desarrollador", DESARROLLADOR)
             put("fecha_hora", r.fechaHora)
             put("latitud", r.latitud)
             put("longitud", r.longitud)

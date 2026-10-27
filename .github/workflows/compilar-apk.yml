@@ -61,4 +61,3 @@ jobs:
           make_latest: true
           body: |
             Descarga **Biogas.apk** en tu celular Android y ábrelo para instalar o actualizar.
-            Desarrollado por: Gamaliel Huasco.
