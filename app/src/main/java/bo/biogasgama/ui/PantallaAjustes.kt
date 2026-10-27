@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -57,7 +58,13 @@ private fun EditorUmbrales(vm: AppViewModel) {
         if (a != null && b != null && c != null && d != null) Umbrales(a, b, c, d) else null
     }
 
+    var verAyuda by remember { mutableStateOf(false) }
     Seccion("Umbrales de evaluación") {
+        Text(
+            "Para dar SÍ deben cumplirse las cuatro condiciones a la vez.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        OutlinedButton(onClick = { verAyuda = true }) { Text("¿Cómo usar los umbrales?") }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             CampoNumero(ch4, { ch4 = it }, "CH4 mínimo", "% LEL", Modifier.weight(1f))
             CampoNumero(o2, { o2 = it }, "O2 máximo", "% vol.", Modifier.weight(1f))
@@ -73,6 +80,7 @@ private fun EditorUmbrales(vm: AppViewModel) {
             TextButton(onClick = { vm.guardarUmbrales(Umbrales()) }) { Text("Restablecer") }
         }
     }
+    if (verAyuda) DialogoAyudaUmbrales { verAyuda = false }
 }
 
 @Composable
