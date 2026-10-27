@@ -1,3 +1,7 @@
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -14,7 +18,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-        buildConfigField("String", "BUILD_TIME", "\"${java.time.ZonedDateTime.now(java.time.ZoneId.of("America/La_Paz")).format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))}\"")
+        buildConfigField("String", "BUILD_TIME", "\"${ZonedDateTime.now(ZoneId.of("America/La_Paz")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))}\"")
     }
 
     // Firma fija: así cada APK nuevo se instala encima del anterior.
